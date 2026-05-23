@@ -1,0 +1,31 @@
+:root {
+  color: #f4f0e8;
+  background: #10111a;
+  font-family:
+    Inter, "Avenir Next", "Segoe UI", Arial, sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+button,
+summary {
+  font: inherit;
+}
+
+#root {
+  min-height: 100vh;
+}
