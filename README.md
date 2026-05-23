@@ -5,8 +5,10 @@ to manage when the whole table can see them. This first-pass proof of concept
 focuses on one **Archenemy Schemes** panel and on proving that local editing,
 production builds, and public deployment all work.
 
-The sample scheme names and reminder text in the app are fictional placeholder
-data, not card metadata.
+The app now ships a trimmed print catalog derived from an exported Scryfall
+scheme search. It includes set, release date, scheme type, text, artist, and
+reprint metadata, but deliberately does not yet include image or remote URL
+fields.
 
 ## Local Development
 
@@ -36,17 +38,27 @@ npm run build      # Generate the production files in dist/
 npm run preview    # Preview the production build locally
 ```
 
-## Placeholder Experience
+## Scheme Deck Experience
 
 The landing page is designed as a readable tabletop display, including:
 
-- A large current scheme card.
-- An ongoing schemes area rendered from local placeholder data.
+- Set selection controls labeled with set name and release year.
+- A separate setting for retaining duplicate printings across selected sets.
+- A large current scheme card rendered from the selected print pool.
+- An ongoing schemes preview rendered from the included cards.
 - A Rules Reminder panel and a touch-friendly Detailed Rules placeholder.
-- A dev loop check footer so it is obvious which starter build is running.
+- A dev loop check footer so it is obvious which catalog build is running.
 
 The layout favors high contrast, generous spacing, and large touch targets for
 desktop displays and iPads in landscape orientation.
+
+### Shipped Scheme Data
+
+The compact local fixture at `src/data/schemePrints.json` represents printed
+cards rather than deduplicated card designs. Selecting multiple sets therefore
+models adding multiple product pools: schemes printed in more than one
+selected set remain duplicated by default. Turning off **Include duplicate
+printings** keeps one printed version per scheme identity.
 
 ## Deployment
 
@@ -87,9 +99,8 @@ layout.
 
 ## Later Pass TODO
 
-- Add real card metadata and images through a manually run import script.
-- Replace fictional sample schemes only after the data source and image
-  handling are selected.
+- Add art image metadata and images through a manually run import script.
+- Record the provenance/update process for refreshing the local catalog.
 - Expand Detailed Rules once real content is available.
 
 ## Verification Commands
