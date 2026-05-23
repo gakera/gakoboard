@@ -28,6 +28,11 @@ npm run dev
 Open the local URL shown by Vite. Edit a heading or a style in `src/` to
 confirm that the browser updates during development.
 
+In VS Code, open **Run and Debug**, choose **Run GAKoBoard (Vite + Browser)**,
+and press the play button or `F5`. The checked-in launch configuration starts
+the Vite development server and opens the app in VS Code's integrated browser
+once the server is ready. Stop the debug session to stop that Vite server.
+
 Available commands:
 
 ```bash

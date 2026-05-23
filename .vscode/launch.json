@@ -1,0 +1,28 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run GAKoBoard (Vite + Browser)",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--", "--host", "localhost"],
+      "console": "integratedTerminal",
+      "serverReadyAction": {
+        "action": "startDebugging",
+        "pattern": "Local:\\s+(https?://\\S+)",
+        "name": "Open GAKoBoard in VS Code Browser"
+      }
+    },
+    {
+      "name": "Open GAKoBoard in VS Code Browser",
+      "type": "editor-browser",
+      "request": "launch",
+      "url": "http://localhost:5173/gakoboard/",
+      "presentation": {
+        "hidden": true
+      },
+      "webRoot": "${workspaceFolder}/src"
+    }
+  ]
+}
