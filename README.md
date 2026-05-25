@@ -1,14 +1,18 @@
 # GAKoBoard
 
 GAKoBoard is a small tabletop helper display for game states that are easier
-to manage when the whole table can see them. This first-pass proof of concept
-focuses on one **Archenemy Schemes** panel and on proving that local editing,
-production builds, and public deployment all work.
+to manage when the whole table can see them. The current proof of concept
+implements a playable **Archenemy Schemes** loop backed by a local print
+catalog.
 
 The app now ships a trimmed print catalog derived from an exported Scryfall
 scheme search. It includes set, release date, scheme type, text, artist, and
 reprint metadata, but deliberately does not yet include image or remote URL
 fields.
+
+Mana symbols needed by scheme rules text are shipped locally under
+`src/assets/mana/`; current color and colorless symbol assets render inline in
+oracle text, while numeric and variable costs use local styled fallbacks.
 
 ## Local Development
 
@@ -49,10 +53,17 @@ The landing page is designed as a readable tabletop display, including:
 
 - Set selection controls labeled with set name and release year.
 - A separate setting for retaining duplicate printings across selected sets.
-- A large current scheme card rendered from the selected print pool.
-- An ongoing schemes preview rendered from the included cards.
+- Regular Archenemy validation for a minimum 20-card deck and no more than two
+  copies of any scheme name.
+- A shuffled game start flow using the selected printed card pool.
+- An explicit **Set Scheme in Motion** action followed by **Resolve & Bottom**
+  or **Keep Ongoing** as appropriate.
+- Persistent ongoing schemes with an **Abandon & Bottom** action.
+- Undo support and a recent game log.
+- Browser-local restoration of the selected setup and active game after reload.
 - A Rules Reminder panel and a touch-friendly Detailed Rules placeholder.
-- A dev loop check footer so it is obvious which catalog build is running.
+- A dev loop check footer so it is obvious whether setup or active play is
+  being saved.
 
 The layout favors high contrast, generous spacing, and large touch targets for
 desktop displays and iPads in landscape orientation.
@@ -64,6 +75,13 @@ cards rather than deduplicated card designs. Selecting multiple sets therefore
 models adding multiple product pools: schemes printed in more than one
 selected set remain duplicated by default. Turning off **Include duplicate
 printings** keeps one printed version per scheme identity.
+
+### Current Local Persistence
+
+The current set-selection preferences and active shuffled game are stored in
+the browser's `localStorage`. Game state includes the ordered face-down deck,
+the current scheme awaiting player handling, face-up ongoing schemes, recent
+history, and up to 20 undo snapshots.
 
 ## Deployment
 
@@ -104,6 +122,9 @@ layout.
 
 ## Later Pass TODO
 
+- Add named saved deck configurations, per-card quantity editing, and
+  deck-config import/export.
+- Add manual tabletop correction tools beyond undo.
 - Add art image metadata and images through a manually run import script.
 - Record the provenance/update process for refreshing the local catalog.
 - Expand Detailed Rules once real content is available.

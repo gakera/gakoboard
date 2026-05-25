@@ -171,6 +171,78 @@
   font-size: 0.94rem;
 }
 
+.validation-message,
+.recovery-message {
+  border: 1px solid #784941;
+  border-radius: 12px;
+  background: #322129;
+  padding: 13px 16px;
+  color: #f2c8bb;
+  line-height: 1.45;
+}
+
+.validation-message p,
+.recovery-message p {
+  margin: 0;
+}
+
+.validation-message p + p {
+  margin-top: 6px;
+}
+
+.recovery-message {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.action-button {
+  min-height: 56px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  padding: 14px 20px;
+  cursor: pointer;
+  color: #171720;
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 750;
+}
+
+.action-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.primary-action {
+  background: #c18c32;
+}
+
+.ongoing-action {
+  border-color: #5b925f;
+  background: #b7ddb3;
+}
+
+.subtle-action {
+  border-color: #4b4e5d;
+  background: #252735;
+  color: #eee7d9;
+}
+
+.abandon-action {
+  min-height: 48px;
+  margin-top: 16px;
+  padding: 11px 16px;
+  border-color: #83564d;
+  background: #34252b;
+  color: #efcfc5;
+}
+
+.start-button {
+  width: fit-content;
+  min-width: min(300px, 100%);
+}
+
 .sr-only {
   position: absolute;
   width: 1px;
@@ -205,10 +277,45 @@
   font-size: 0.82rem;
 }
 
+.game-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 18px;
+}
+
+.deck-counter {
+  display: flex;
+  align-items: baseline;
+  gap: 11px;
+}
+
+.deck-counter strong {
+  color: #fff5df;
+  font-size: clamp(2.2rem, 3.5vw, 2.8rem);
+  line-height: 1;
+}
+
+.deck-counter span {
+  color: #c9c6bc;
+  font-size: 1.02rem;
+}
+
+.toolbar-actions,
+.current-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
 .board-grid {
   display: grid;
   grid-template-columns: minmax(280px, 0.92fr) minmax(320px, 1.18fr);
   gap: clamp(15px, 2vw, 22px);
+}
+
+.gameplay-grid {
+  grid-template-columns: minmax(390px, 1.08fr) minmax(320px, 0.92fr);
 }
 
 .current-card {
@@ -217,12 +324,16 @@
   padding: clamp(22px, 3vw, 30px);
   display: flex;
   flex-direction: column;
-  justify-content: end;
+  justify-content: start;
   gap: 12px;
   border: 2px solid #ca983b;
   background:
     linear-gradient(150deg, rgba(211, 155, 56, 0.17), transparent 54%),
     #242332;
+}
+
+.gameplay-card {
+  min-height: 460px;
 }
 
 .current-card h3 {
@@ -256,15 +367,89 @@
   white-space: pre-line;
 }
 
+.mana-symbol,
+.mana-token {
+  width: 1.12em;
+  height: 1.12em;
+  margin: 0 0.08em;
+  vertical-align: -0.2em;
+}
+
+.mana-symbol {
+  display: inline-block;
+}
+
+.mana-token {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #d1c8b5;
+  color: #241f1a;
+  font-size: 0.84em;
+  font-weight: 750;
+  line-height: 1;
+}
+
+.awaiting-scheme {
+  flex: 1;
+  display: grid;
+  align-content: center;
+  gap: 14px;
+}
+
+.awaiting-scheme h3 {
+  margin: 0;
+}
+
+.reveal-action {
+  width: fit-content;
+  margin-top: 10px;
+}
+
+.resolution-prompt {
+  margin: auto 0 0;
+  padding: 12px 15px;
+  border-radius: 10px;
+  background: #1d202c;
+  color: #eee7d9;
+  line-height: 1.45;
+}
+
 .ongoing-area {
   display: grid;
   align-content: start;
   gap: 14px;
 }
 
+.ongoing-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ongoing-heading span {
+  border-radius: 999px;
+  padding: 8px 12px;
+  color: #d3aa58;
+  background: #252735;
+  font-size: 0.92rem;
+  font-weight: 650;
+}
+
 .ongoing-list {
   display: grid;
   gap: 12px;
+}
+
+.empty-ongoing {
+  margin: 0;
+  border: 1px dashed #3b3d4a;
+  border-radius: 16px;
+  padding: 25px 20px;
+  color: #bcb9b0;
+  text-align: center;
 }
 
 .ongoing-card {
@@ -295,14 +480,25 @@
   font-weight: 650;
 }
 
-.more-schemes {
+.history-panel {
+  border: 1px solid #323544;
+  border-radius: 16px;
+  background: #131521;
+  padding: clamp(17px, 2vw, 22px);
+}
+
+.history-panel h3 {
+  margin: 7px 0 13px;
+  font-size: 1.3rem;
+}
+
+.history-panel ol {
   margin: 0;
-  padding: 13px 16px;
-  border-radius: 12px;
-  color: #d3aa58;
-  background: #252735;
-  font-size: 1rem;
-  font-weight: 650;
+  padding-left: 22px;
+  display: grid;
+  gap: 8px;
+  color: #d5d2c9;
+  line-height: 1.4;
 }
 
 .rules-panel {
@@ -380,12 +576,22 @@
     grid-template-columns: 1fr;
   }
 
+  .game-toolbar,
+  .recovery-message {
+    align-items: start;
+    flex-direction: column;
+  }
+
   .set-options {
     grid-template-columns: 1fr;
   }
 
   .current-card {
     min-height: 235px;
+  }
+
+  .gameplay-card {
+    min-height: 420px;
   }
 
   .detail-toggle {
@@ -399,8 +605,14 @@
   }
 
   .section-heading,
-  .dev-check {
+  .dev-check,
+  .toolbar-actions {
     align-items: start;
     flex-direction: column;
+  }
+
+  .toolbar-actions,
+  .toolbar-actions .action-button {
+    width: 100%;
   }
 }

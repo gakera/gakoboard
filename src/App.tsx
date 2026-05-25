@@ -1,42 +1,135 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useReducer, useState } from 'react'
 import './App.css'
 import {
-  countDuplicatePrintings,
-  getSchemeDeck,
-  schemeSets,
-} from './data/schemeCatalog'
+  STORAGE_KEYS,
+  archenemyReducer,
+  createGame,
+  isRestorableGame,
+  validateRegularDeck,
+  type ArchenemyGameState,
+  type DeckSelection,
+} from './archenemy/gameState'
+import { DeckSetup } from './components/DeckSetup'
+import { GameBoard } from './components/GameBoard'
+import { getSchemeDeck, schemePrints, schemeSets } from './data/schemeCatalog'
+
+const cardById = new Map(schemePrints.map((card) => [card.id, card]))
+const cardIds = new Set(cardById.keys())
+const defaultSelection: DeckSelection = {
+  includedSetCodes: schemeSets.map((set) => set.code),
+  includeDuplicatePrintings: true,
+}
+
+function loadDeckSelection() {
+  try {
+    const savedSelection = localStorage.getItem(STORAGE_KEYS.deckSelection)
+
+    if (!savedSelection) {
+      return defaultSelection
+    }
+
+    const parsedSelection = JSON.parse(savedSelection) as Partial<DeckSelection>
+    const knownSetCodes = new Set(schemeSets.map((set) => set.code))
+
+    if (
+      !Array.isArray(parsedSelection.includedSetCodes) ||
+      typeof parsedSelection.includeDuplicatePrintings !== 'boolean' ||
+      !parsedSelection.includedSetCodes.every((code) => knownSetCodes.has(code))
+    ) {
+      return defaultSelection
+    }
+
+    return parsedSelection as DeckSelection
+  } catch {
+    return defaultSelection
+  }
+}
+
+function loadActiveGame() {
+  try {
+    const savedGame = localStorage.getItem(STORAGE_KEYS.activeGame)
+
+    if (!savedGame) {
+      return { game: null, recoveryMessage: null }
+    }
+
+    const parsedGame: unknown = JSON.parse(savedGame)
+
+    if (isRestorableGame(parsedGame, cardIds)) {
+      return { game: parsedGame, recoveryMessage: null }
+    }
+
+    return {
+      game: null,
+      recoveryMessage:
+        'A saved game could not be restored because its card data no longer matches this catalog.',
+    }
+  } catch {
+    return {
+      game: null,
+      recoveryMessage: 'A saved game could not be read from this browser.',
+    }
+  }
+}
 
 function App() {
-  const [includedSetCodes, setIncludedSetCodes] = useState(() =>
-    schemeSets.map((set) => set.code),
+  const [selection, setSelection] = useState(loadDeckSelection)
+  const [loadedGame] = useState(loadActiveGame)
+  const [recoveryMessage, setRecoveryMessage] = useState(
+    loadedGame.recoveryMessage,
   )
-  const [includeDuplicatePrintings, setIncludeDuplicatePrintings] =
-    useState(true)
-
-  const selectedSetCodes = useMemo(
-    () => new Set(includedSetCodes),
-    [includedSetCodes],
-  )
-  const selectedPrints = useMemo(
-    () => getSchemeDeck(selectedSetCodes, true),
-    [selectedSetCodes],
-  )
-  const schemeDeck = useMemo(
-    () => getSchemeDeck(selectedSetCodes, includeDuplicatePrintings),
-    [includeDuplicatePrintings, selectedSetCodes],
-  )
-  const duplicatePrintings = countDuplicatePrintings(selectedPrints)
-  const currentScheme = schemeDeck[0]
-  const ongoingSchemes = schemeDeck.filter(
-    (scheme) => scheme.typeLine === 'Ongoing Scheme',
+  const [game, dispatch] = useReducer(
+    archenemyReducer,
+    loadedGame.game as ArchenemyGameState | null,
   )
 
-  function toggleSet(setCode: string) {
-    setIncludedSetCodes((setCodes) =>
-      setCodes.includes(setCode)
-        ? setCodes.filter((code) => code !== setCode)
-        : [...setCodes, setCode],
-    )
+  const deckCards = useMemo(
+    () =>
+      getSchemeDeck(
+        new Set(selection.includedSetCodes),
+        selection.includeDuplicatePrintings,
+      ),
+    [selection],
+  )
+  const validationErrors = useMemo(
+    () => validateRegularDeck(deckCards),
+    [deckCards],
+  )
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.deckSelection, JSON.stringify(selection))
+  }, [selection])
+
+  useEffect(() => {
+    if (game) {
+      localStorage.setItem(STORAGE_KEYS.activeGame, JSON.stringify(game))
+      return
+    }
+
+    if (!recoveryMessage) {
+      localStorage.removeItem(STORAGE_KEYS.activeGame)
+    }
+  }, [game, recoveryMessage])
+
+  function startGame(cards: typeof schemePrints) {
+    setRecoveryMessage(null)
+    dispatch({ type: 'START_GAME', game: createGame(cards, selection) })
+  }
+
+  function returnToSetup() {
+    if (
+      window.confirm(
+        'End this active game and return to deck setup? The current game state will be cleared.',
+      )
+    ) {
+      setRecoveryMessage(null)
+      dispatch({ type: 'END_GAME' })
+    }
+  }
+
+  function discardSavedGame() {
+    localStorage.removeItem(STORAGE_KEYS.activeGame)
+    setRecoveryMessage(null)
   }
 
   return (
@@ -50,119 +143,42 @@ function App() {
       <section className="scheme-board" aria-labelledby="scheme-heading">
         <div className="section-heading">
           <div>
-            <p className="eyebrow">Proof of Concept</p>
+            <p className="eyebrow">{game ? 'In Progress' : 'Game Setup'}</p>
             <h2 id="scheme-heading">Archenemy Schemes</h2>
           </div>
-          <span className="sample-badge">Print Catalog</span>
+          <span className="sample-badge">
+            {game ? 'Active Game Saved' : 'Print Catalog'}
+          </span>
         </div>
 
-        <section className="deck-builder" aria-labelledby="deck-builder-heading">
-          <div className="builder-intro">
-            <p className="card-label">Deck Setup</p>
-            <h3 id="deck-builder-heading">Sets in the deck</h3>
-            <p>
-              Select products as if they were added from a box. Set reprints
-              stay in the pool as separate cards unless duplicates are removed.
-            </p>
+        {!game && recoveryMessage && (
+          <div className="recovery-message" role="alert">
+            <p>{recoveryMessage}</p>
+            <button
+              className="action-button subtle-action"
+              onClick={discardSavedGame}
+              type="button"
+            >
+              Discard Saved Game
+            </button>
           </div>
+        )}
 
-          <fieldset className="set-options">
-            <legend className="sr-only">Choose included scheme sets</legend>
-            {schemeSets.map((set) => (
-              <label className="set-option" key={set.code}>
-                <input
-                  checked={selectedSetCodes.has(set.code)}
-                  onChange={() => toggleSet(set.code)}
-                  type="checkbox"
-                />
-                <span className="set-label">
-                  <strong>{set.name}</strong>
-                  <span>
-                    {set.year} · {set.printCount} cards
-                  </span>
-                </span>
-              </label>
-            ))}
-          </fieldset>
-
-          <label className="duplicate-toggle">
-            <input
-              checked={includeDuplicatePrintings}
-              onChange={(event) =>
-                setIncludeDuplicatePrintings(event.target.checked)
-              }
-              type="checkbox"
-            />
-            <span>
-              <strong>Include duplicate printings</strong>
-              <small>
-                Keep matching schemes when they appear in more than one
-                selected set.
-              </small>
-            </span>
-          </label>
-
-          <div className="deck-stats" aria-live="polite">
-            <p>
-              <strong>{schemeDeck.length}</strong>
-              <span>cards selected</span>
-            </p>
-            <p>
-              <strong>{ongoingSchemes.length}</strong>
-              <span>ongoing schemes</span>
-            </p>
-            <p>
-              <strong>{duplicatePrintings}</strong>
-              <span>
-                {includeDuplicatePrintings ? 'duplicate cards' : 'removed'}
-              </span>
-            </p>
-          </div>
-        </section>
-
-        <div className="board-grid">
-          <article className="current-card">
-            <p className="card-label">Current Scheme</p>
-            {currentScheme ? (
-              <>
-                <h3>{currentScheme.name}</h3>
-                <p className="print-meta">
-                  {currentScheme.setName} · {currentScheme.releasedAt.slice(0, 4)}
-                </p>
-                <p className="kind">{currentScheme.typeLine}</p>
-                <p className="card-copy">{currentScheme.oracleText}</p>
-              </>
-            ) : (
-              <>
-                <h3>No sets selected</h3>
-                <p className="card-copy">
-                  Select at least one set above to create a scheme deck.
-                </p>
-              </>
-            )}
-          </article>
-
-          <section className="ongoing-area" aria-label="Ongoing schemes">
-            <p className="card-label">Ongoing Schemes</p>
-            <div className="ongoing-list">
-              {ongoingSchemes.slice(0, 2).map((scheme) => (
-                <article className="ongoing-card" key={scheme.id}>
-                  <h3>{scheme.name}</h3>
-                  <p className="ongoing-meta">
-                    {scheme.setName} · {scheme.releasedAt.slice(0, 4)}
-                  </p>
-                  <p>{scheme.oracleText}</p>
-                </article>
-              ))}
-              {ongoingSchemes.length > 2 && (
-                <p className="more-schemes">
-                  + {ongoingSchemes.length - 2} more ongoing schemes in this
-                  deck
-                </p>
-              )}
-            </div>
-          </section>
-        </div>
+        {game ? (
+          <GameBoard
+            cardById={cardById}
+            game={game}
+            onAction={dispatch}
+            onReturnToSetup={returnToSetup}
+          />
+        ) : (
+          <DeckSetup
+            onSelectionChange={setSelection}
+            onStartGame={startGame}
+            selection={selection}
+            validationErrors={validationErrors}
+          />
+        )}
       </section>
 
       <aside className="rules-panel" aria-labelledby="rules-heading">
@@ -178,8 +194,9 @@ function App() {
         <details className="detail-toggle">
           <summary>Detailed Rules</summary>
           <p>
-            Full card references and step-by-step rulings will be added in a
-            later pass.
+            The player controls resolution explicitly: reveal a scheme, finish
+            resolving its abilities at the table, then bottom it or keep it
+            face up if it is ongoing.
           </p>
         </details>
       </aside>
@@ -188,10 +205,12 @@ function App() {
         <div>
           <p className="card-label">Dev loop check</p>
           <p className="status">
-            Rendering 110 printed scheme records from the shipped catalog.
+            {game
+              ? 'Active game state is saved locally after each action.'
+              : 'Build a regular scheme deck from the shipped print catalog.'}
           </p>
         </div>
-        <span className="version">v0.2.0-poc</span>
+        <span className="version">v0.3.0-poc</span>
       </footer>
     </main>
   )
