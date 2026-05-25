@@ -6,9 +6,9 @@ implements a playable **Archenemy Schemes** loop backed by a local print
 catalog.
 
 The app now ships a trimmed print catalog derived from an exported Scryfall
-scheme search. It includes set, release date, scheme type, text, artist, and
-reprint metadata, but deliberately does not yet include image or remote URL
-fields.
+scheme search. It includes set, release date, scheme type, text, artist,
+reprint metadata, and external card image URLs used when visible scheme cards
+are rendered.
 
 Mana symbols needed by scheme rules text are shipped locally under
 `src/assets/mana/`; current color and colorless symbol assets render inline in
@@ -59,6 +59,10 @@ The landing page is designed as a readable tabletop display, including:
 - An explicit **Set Scheme in Motion** action followed by **Resolve & Bottom**
   or **Keep Ongoing** as appropriate.
 - Persistent ongoing schemes with an **Abandon & Bottom** action.
+- Image-first scheme display: the current scheme is large in the play area, and
+  ongoing schemes appear as a smaller time-ordered strip.
+- Tap or click any visible scheme card to open the largest card scan in a
+  near-fullscreen view.
 - Undo support and a recent game log.
 - Browser-local restoration of the selected setup and active game after reload.
 - A Rules Reminder panel and a touch-friendly Detailed Rules placeholder.
@@ -82,6 +86,11 @@ The current set-selection preferences and active shuffled game are stored in
 the browser's `localStorage`. Game state includes the ordered face-down deck,
 the current scheme awaiting player handling, face-up ongoing schemes, recent
 history, and up to 20 undo snapshots.
+
+An active game is also encoded into the URL hash for sharing. The shared URL
+includes only the active board state: face-down deck order, current scheme,
+and ongoing schemes. Deck setup choices and undo snapshots are intentionally
+local only and are not included in shared links.
 
 ## Deployment
 

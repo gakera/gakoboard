@@ -16,6 +16,11 @@ export type SchemePrint = {
   collectorNumber: string
   isReprint: boolean
   artist: string
+  imageUris: {
+    normal: string
+    large: string
+    artCrop: string
+  }
 }
 
 export type SchemeSet = {

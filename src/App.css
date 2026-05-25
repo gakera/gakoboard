@@ -308,6 +308,99 @@
   gap: 10px;
 }
 
+.playmat {
+  border: 1px solid #323544;
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(218, 168, 76, 0.12), transparent 36%),
+    #12141f;
+  padding: clamp(18px, 2.5vw, 28px);
+}
+
+.current-scheme-layout {
+  display: grid;
+  grid-template-columns: minmax(300px, 560px) minmax(280px, 1fr);
+  align-items: center;
+  gap: clamp(18px, 3vw, 34px);
+}
+
+.current-scheme-frame,
+.ongoing-image-frame {
+  border-radius: 24px;
+  background: #090a10;
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.34);
+}
+
+.current-scheme-frame {
+  padding: clamp(10px, 1.6vw, 15px);
+}
+
+.ongoing-image-frame {
+  padding: 7px;
+}
+
+.scheme-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 18px;
+  background: #090a10;
+}
+
+.scheme-image-button {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 18px;
+  background: transparent;
+  cursor: zoom-in;
+  font: inherit;
+}
+
+.scheme-image-button:focus-visible {
+  outline: 3px solid #daa84c;
+  outline-offset: 4px;
+}
+
+.scheme-image-current {
+  max-height: min(68vh, 680px);
+  object-fit: contain;
+}
+
+.scheme-image-ongoing {
+  border-radius: 13px;
+}
+
+.scheme-control-panel {
+  border: 1px solid #3b3d4a;
+  border-radius: 20px;
+  background: #1c1e2b;
+  padding: clamp(18px, 2.4vw, 26px);
+  display: grid;
+  gap: 18px;
+}
+
+.scheme-metadata {
+  display: grid;
+  gap: 6px;
+}
+
+.scheme-metadata h3 {
+  margin: 0;
+  color: #fff8e8;
+  font-size: clamp(1.45rem, 2.4vw, 2rem);
+  line-height: 1.1;
+}
+
+.scheme-metadata p {
+  margin: 0;
+  color: #d3aa58;
+  font-size: 1rem;
+  font-weight: 650;
+  line-height: 1.35;
+}
+
 .board-grid {
   display: grid;
   grid-template-columns: minmax(280px, 0.92fr) minmax(320px, 1.18fr);
@@ -392,14 +485,25 @@
 }
 
 .awaiting-scheme {
-  flex: 1;
   display: grid;
   align-content: center;
   gap: 14px;
+  min-height: 390px;
 }
 
 .awaiting-scheme h3 {
   margin: 0;
+  color: #fff8e8;
+  font-size: clamp(2rem, 4vw, 3rem);
+  line-height: 1.02;
+}
+
+.awaiting-scheme p:not(.card-label) {
+  max-width: 620px;
+  margin: 0;
+  color: #d5d2c9;
+  font-size: clamp(1.05rem, 1.7vw, 1.25rem);
+  line-height: 1.5;
 }
 
 .reveal-action {
@@ -408,7 +512,7 @@
 }
 
 .resolution-prompt {
-  margin: auto 0 0;
+  margin: 0;
   padding: 12px 15px;
   border-radius: 10px;
   background: #1d202c;
@@ -439,11 +543,14 @@
 }
 
 .ongoing-list {
-  display: grid;
+  display: flex;
   gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 8px;
 }
 
 .empty-ongoing {
+  flex: 1 1 100%;
   margin: 0;
   border: 1px dashed #3b3d4a;
   border-radius: 16px;
@@ -453,16 +560,20 @@
 }
 
 .ongoing-card {
-  padding: clamp(18px, 2vw, 22px);
+  flex: 0 0 clamp(180px, 22vw, 265px);
+  padding: 12px;
   border-radius: 16px;
   border: 1px solid #3b3d4a;
   background: #212330;
+  display: grid;
+  align-content: start;
+  gap: 12px;
 }
 
 .ongoing-card h3 {
-  margin: 0 0 10px;
+  margin: 0;
   color: #f4f0e8;
-  font-size: clamp(1.18rem, 1.8vw, 1.38rem);
+  font-size: clamp(1rem, 1.4vw, 1.12rem);
 }
 
 .ongoing-card p {
@@ -473,11 +584,15 @@
   white-space: pre-line;
 }
 
-.ongoing-card .ongoing-meta {
-  margin: -3px 0 10px;
+.ongoing-card .scheme-metadata p {
   color: #d3aa58;
-  font-size: 0.94rem;
-  font-weight: 650;
+  font-size: 0.87rem;
+  white-space: normal;
+}
+
+.ongoing-card .scheme-metadata .card-label {
+  color: #daa84c;
+  font-size: 0.68rem;
 }
 
 .history-panel {
@@ -499,6 +614,119 @@
   gap: 8px;
   color: #d5d2c9;
   line-height: 1.4;
+}
+
+.card-zoom-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  padding: clamp(8px, 1.6vw, 18px);
+  background: rgba(5, 6, 10, 0.88);
+  overflow: auto;
+}
+
+.card-zoom-content {
+  position: relative;
+  width: min(100%, 1180px);
+  min-height: 100%;
+  margin: 0 auto;
+  display: grid;
+  grid-template-rows: minmax(0, auto) auto;
+  gap: clamp(10px, 1.5vw, 16px);
+  justify-items: center;
+  align-content: start;
+}
+
+.card-zoom-image {
+  display: block;
+  max-width: 100%;
+  max-height: calc(100vh - clamp(86px, 12vh, 132px));
+  margin: 0 auto;
+  border-radius: 22px;
+  background: #090a10;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+}
+
+.card-zoom-controls {
+  width: min(100%, 720px);
+  border: 1px solid #3b3d4a;
+  border-radius: 16px;
+  background: rgba(28, 30, 43, 0.95);
+  padding: clamp(12px, 1.6vw, 18px);
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.card-zoom-copy {
+  display: grid;
+  gap: 14px;
+}
+
+.card-zoom-copy-heading {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.card-zoom-oracle {
+  margin: 0;
+  color: #eee7d9;
+  font-size: calc(1.08rem * var(--oracle-text-scale, 1));
+  line-height: 1.48;
+  white-space: pre-line;
+}
+
+.font-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.font-control-button {
+  width: 42px;
+  height: 42px;
+  border: 1px solid #4b4e5d;
+  border-radius: 999px;
+  background: #252735;
+  color: #fff8e8;
+  cursor: pointer;
+  font: inherit;
+  font-size: 1.45rem;
+  font-weight: 750;
+  line-height: 1;
+}
+
+.font-control-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.font-control-button:focus-visible {
+  outline: 3px solid #daa84c;
+  outline-offset: 3px;
+}
+
+.card-zoom-close {
+  position: fixed;
+  top: clamp(10px, 1.8vw, 22px);
+  right: clamp(10px, 1.8vw, 22px);
+  z-index: 21;
+  width: 42px;
+  height: 42px;
+  border: 1px solid rgba(255, 248, 232, 0.32);
+  border-radius: 50%;
+  background: rgba(12, 13, 19, 0.86);
+  color: #fff8e8;
+  cursor: pointer;
+  font-size: 1.8rem;
+  line-height: 1;
+}
+
+.card-zoom-close:focus-visible {
+  outline: 3px solid #daa84c;
+  outline-offset: 3px;
 }
 
 .rules-panel {
@@ -572,6 +800,7 @@
 
 @media (max-width: 860px) {
   .board-grid,
+  .current-scheme-layout,
   .rules-panel {
     grid-template-columns: 1fr;
   }
@@ -592,6 +821,23 @@
 
   .gameplay-card {
     min-height: 420px;
+  }
+
+  .scheme-image-current {
+    max-height: none;
+  }
+
+  .card-zoom-image {
+    max-height: calc(100vh - 118px);
+  }
+
+  .card-zoom-controls {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .card-zoom-copy-heading {
+    flex-direction: column;
   }
 
   .detail-toggle {

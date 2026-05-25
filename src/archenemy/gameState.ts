@@ -42,6 +42,7 @@ export type ArchenemyGameState = GameSnapshot & {
   id: string
   startedAt: string
   updatedAt: string
+  isSharedFromUrl?: boolean
   deckSelection: DeckSelection
   undoStack: GameSnapshot[]
 }

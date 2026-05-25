@@ -9,12 +9,20 @@ import {
   type ArchenemyGameState,
   type DeckSelection,
 } from './archenemy/gameState'
+import {
+  decodeGameFromHash,
+  encodeGameToHash,
+  replaceSharedGameHash,
+} from './archenemy/shareUrl'
 import { DeckSetup } from './components/DeckSetup'
 import { GameBoard } from './components/GameBoard'
 import { getSchemeDeck, schemePrints, schemeSets } from './data/schemeCatalog'
 
 const cardById = new Map(schemePrints.map((card) => [card.id, card]))
 const cardIds = new Set(cardById.keys())
+const printIndexById = new Map(
+  schemePrints.map((card, index) => [card.id, index]),
+)
 const defaultSelection: DeckSelection = {
   includedSetCodes: schemeSets.map((set) => set.code),
   includeDuplicatePrintings: true,
@@ -47,6 +55,12 @@ function loadDeckSelection() {
 
 function loadActiveGame() {
   try {
+    const sharedGame = decodeGameFromHash(window.location.hash, schemePrints)
+
+    if (sharedGame) {
+      return { game: sharedGame, recoveryMessage: null }
+    }
+
     const savedGame = localStorage.getItem(STORAGE_KEYS.activeGame)
 
     if (!savedGame) {
@@ -73,8 +87,10 @@ function loadActiveGame() {
 }
 
 function App() {
-  const [selection, setSelection] = useState(loadDeckSelection)
   const [loadedGame] = useState(loadActiveGame)
+  const [selection, setSelection] = useState(
+    () => loadedGame.game?.deckSelection ?? loadDeckSelection(),
+  )
   const [recoveryMessage, setRecoveryMessage] = useState(
     loadedGame.recoveryMessage,
   )
@@ -103,11 +119,13 @@ function App() {
   useEffect(() => {
     if (game) {
       localStorage.setItem(STORAGE_KEYS.activeGame, JSON.stringify(game))
+      replaceSharedGameHash(encodeGameToHash(game, printIndexById))
       return
     }
 
     if (!recoveryMessage) {
       localStorage.removeItem(STORAGE_KEYS.activeGame)
+      replaceSharedGameHash(null)
     }
   }, [game, recoveryMessage])
 
@@ -117,10 +135,12 @@ function App() {
   }
 
   function returnToSetup() {
+    const confirmMessage = game?.isSharedFromUrl
+      ? 'This shared game was loaded from the URL and has no deck setup or undo history to return to. Clear this shared game and start setup from scratch?'
+      : 'End this active game and return to deck setup? The current game state will be cleared.'
+
     if (
-      window.confirm(
-        'End this active game and return to deck setup? The current game state will be cleared.',
-      )
+      window.confirm(confirmMessage)
     ) {
       setRecoveryMessage(null)
       dispatch({ type: 'END_GAME' })
@@ -147,7 +167,11 @@ function App() {
             <h2 id="scheme-heading">Archenemy Schemes</h2>
           </div>
           <span className="sample-badge">
-            {game ? 'Active Game Saved' : 'Print Catalog'}
+            {game?.isSharedFromUrl
+              ? 'Shared URL Game'
+              : game
+                ? 'Active Game Saved'
+                : 'Print Catalog'}
           </span>
         </div>
 
@@ -206,7 +230,7 @@ function App() {
           <p className="card-label">Dev loop check</p>
           <p className="status">
             {game
-              ? 'Active game state is saved locally after each action.'
+              ? 'Active game state is saved locally and encoded in the URL after each action.'
               : 'Build a regular scheme deck from the shipped print catalog.'}
           </p>
         </div>

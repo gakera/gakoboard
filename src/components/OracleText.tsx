@@ -8,6 +8,7 @@ import whiteMana from '../assets/mana/W.svg'
 type OracleTextProps = {
   className?: string
   text: string
+  textScale?: number
 }
 
 const manaSymbols: Record<string, string> = {
@@ -21,9 +22,13 @@ const manaSymbols: Record<string, string> = {
 
 const manaTokenPattern = /(\{[^}]+\})/g
 
-export function OracleText({ className, text }: OracleTextProps) {
+export function OracleText({ className, text, textScale }: OracleTextProps) {
+  const style = textScale
+    ? ({ '--oracle-text-scale': textScale } as CSSProperties)
+    : undefined
+
   return (
-    <p className={className}>
+    <p className={className} style={style}>
       {text.split(manaTokenPattern).map((part, index) => {
         const symbolKey = part.match(/^\{([^}]+)\}$/)?.[1]
         const symbolAsset = symbolKey && manaSymbols[symbolKey]
@@ -52,3 +57,4 @@ export function OracleText({ className, text }: OracleTextProps) {
     </p>
   )
 }
+import type { CSSProperties } from 'react'
